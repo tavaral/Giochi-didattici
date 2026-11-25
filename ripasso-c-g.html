@@ -1,0 +1,175 @@
+ 
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ripassiamo la C e la G</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#eaf4ff;color:#233650;margin:0;padding:15px}
+main{max-width:700px;margin:20px auto;background:white;padding:25px;border-radius:24px;box-shadow:0 5px 20px #0002;text-align:center}
+h1{color:#285c99;font-size:30px}
+h2{font-size:21px}
+progress{width:100%;height:20px;accent-color:#3888ce}
+#word{font-size:30px;font-weight:bold;margin:35px 0;line-height:1.5}
+#choices{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+button{font-size:20px;font-weight:bold;padding:16px;border:2px solid #a9c6e8;border-radius:14px;background:#edf5ff;color:#233650;cursor:pointer}
+button:hover{filter:brightness(.95)}
+button:disabled{cursor:default}
+.red{background:#c52e40;color:white}
+.blue{background:#2164bb;color:white}
+.good{background:#d1f3d5;border-color:#36984a}
+.bad{background:#ffdada;border-color:#c52e40}
+#feedback{min-height:65px;font-size:22px;font-weight:bold;padding:15px}
+#next,#restart{background:#285c99;color:white}
+u{text-underline-offset:6px}
+</style>
+</head>
+<body>
+<main>
+<h1>PROVA DA SOLO!</h1>
+<h2>RIPASSIAMO LA C E LA G</h2>
+<p id="counter"></p>
+<progress id="progress" max="30" value="0"></progress>
+<h2 id="instruction"></h2>
+<div id="word"></div>
+<div id="choices"></div>
+<div id="feedback" aria-live="polite"></div>
+<button id="next" hidden>AVANTI →</button>
+<button id="restart" hidden>RICOMINCIA</button>
+</main>
+<script>
+const questions=[];
+function sound(word,answer){
+questions.push({
+instruction:"IL SUONO SOTTOLINEATO È DURO O DOLCE?",
+word,options:["DOLCE","DURO"],answer
+});
+}
+function fill(word,options,answer){
+questions.push({
+instruction:"COMPLETA LA PAROLA O LA FRASE.",
+word,options,answer
+});
+}
+function choose(word,options,answer){
+questions.push({
+instruction:"SCEGLI LA PAROLA SCRITTA CORRETTAMENTE.",
+word,options,answer
+});
+}
+
+sound("<u>CA</u>NE","DURO");
+sound("<u>GE</u>LATO","DOLCE");
+sound("<u>CE</u>STO","DOLCE");
+sound("<u>GO</u>MMA","DURO");
+sound("<u>CHI</u>AVE","DURO");
+sound("<u>CI</u>POLLA","DOLCE");
+sound("<u>GI</u>RAFFA","DOLCE");
+sound("<u>GHI</u>RO","DURO");
+
+fill("🐚 HO TROVATO UNA ___NCHIGLIA.",["CO","CA","CU"],"CO");
+fill("🍴 PRENDO LA FOR___TTA.",["CE","CHE","CHI"],"CHE");
+fill("SUL LETTO C'È UN ___SCINO.",["CA","CO","CU"],"CU");
+fill("🎸 LUCA SUONA LA ___TARRA.",["CI","CHE","CHI"],"CHI");
+fill("🧅 LA MAMMA TAGLIA LA ___POLLA.",["CI","CHI","CE"],"CI");
+fill("IL ___STINO È PIENO DI MELE.",["CHE","CE","CI"],"CE");
+fill("🐴 IL ___VALLO CORRE.",["CO","CA","CU"],"CA");
+fill("🐌 LA LU___LA È LENTA.",["MA","MI","ME"],"MA");
+
+fill("🐱 IL ___TTO DORME.",["GA","GO","GU"],"GA");
+fill("🍦 MANGIO UN ___LATO.",["GHE","GI","GE"],"GE");
+fill("🧊 METTO IL ___ACCIO NEL BICCHIERE.",["GI","GHI","GHE"],"GHI");
+fill("🍝 MANGIO GLI SPA___TTI.",["GE","GHI","GHE"],"GHE");
+fill("🦉 IL ___FO VOLA DI NOTTE.",["GA","GO","GU"],"GU");
+fill("LA STRE___ HA UN CAPPELLO NERO.",["GA","GE","GHE"],"GA");
+fill("USO LA ___MMA PER CANCELLARE.",["GU","GO","GA"],"GO");
+fill("🦒 LA ___RAFFA HA IL COLLO LUNGO.",["GHI","GI","GE"],"GI");
+
+choose("☀️ NEL ___ BRILLA IL SOLE.",["CELO","CIELO"],"CIELO");
+choose("🔑 HO PERSO LE ___.",["CHIAVI","CIAVI"],"CHIAVI");
+choose("🧼 CURO LA MIA ___.",["IGENE","IGIENE"],"IGIENE");
+choose("🥕 MANGIO UNA ___.",["CAROTA","CHAROTA"],"CAROTA");
+choose("🐆 IL ___ CORRE VELOCE.",["GHEPARDO","GEPARDO"],"GHEPARDO");
+choose("LA NAVE PARTE PER UNA ___.",["CROCERA","CROCIERA"],"CROCIERA");
+
+questions[15]={
+instruction:"COMPLETA LA PAROLA O LA FRASE.",
+word:"🐌 LA LU___CA È LENTA.",
+options:["MA","MI","ME"],
+answer:"MA"
+};
+questions[15]={
+instruction:"COMPLETA LA PAROLA O LA FRASE.",
+word:"🕯️ ACCENDO UNA ___NDELA.",
+options:["CA","CO","CU"],
+answer:"CA"
+};
+
+let index=0,score=0,mistake=false;
+const el=id=>document.getElementById(id);
+
+function show(){
+mistake=false;
+el("feedback").textContent="";
+el("next").hidden=true;
+el("restart").hidden=true;
+el("choices").innerHTML="";
+el("progress").value=index;
+
+if(index===questions.length){
+el("counter").textContent="30 DOMANDE SU 30";
+el("instruction").textContent="HAI FINITO!";
+el("word").textContent="🌟 BRAVISSIMO!";
+el("feedback").textContent=
+"RISPOSTE CORRETTE AL PRIMO TENTATIVO: "+score+" SU 30";
+el("restart").hidden=false;
+return;
+}
+
+const q=questions[index];
+el("counter").textContent="DOMANDA "+(index+1)+" DI 30";
+el("instruction").textContent=q.instruction;
+el("word").innerHTML=q.word;
+
+q.options.forEach(option=>{
+const b=document.createElement("button");
+b.textContent=option;
+if(option==="DOLCE")b.className="red";
+if(option==="DURO")b.className="blue";
+
+b.onclick=()=>{
+if(option===q.answer){
+if(!mistake)score++;
+b.className="good";
+el("feedback").textContent="🌟 ESATTO! MOLTO BENE!";
+el("feedback").style.color="#237a38";
+el("choices").querySelectorAll("button").forEach(x=>x.disabled=true);
+el("progress").value=index+1;
+el("next").hidden=false;
+}else{
+mistake=true;
+b.className="bad";
+b.disabled=true;
+el("feedback").textContent="RIPROVA, PUOI FARCELA!";
+el("feedback").style.color="#b53b36";
+}
+};
+el("choices").appendChild(b);
+});
+}
+
+el("next").onclick=()=>{
+index++;
+show();
+};
+el("restart").onclick=()=>{
+index=0;
+score=0;
+show();
+};
+show();
+</script>
+</body>
+</html>
